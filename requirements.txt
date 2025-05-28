@@ -1,0 +1,13 @@
+pillow==10.2.0
+python-dotenv==1.0.1
+requests==2.31.0
+faiss-cpu==1.7.4
+pypdf==4.1.0
+dashscope==1.14.1
+qianfan==0.4.0
+sentence-transformers==2.5.1
+langchain>=0.1.11
+langchain-community>=0.0.27
+langchain-core>=0.1.30
+gradio==4.19.2
+langgraph>=0.0.26 

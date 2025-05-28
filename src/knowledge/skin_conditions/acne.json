@@ -1,0 +1,55 @@
+{
+    "condition": "acne",
+    "types": [
+        {
+            "name": "inflammatory_acne",
+            "description": "炎症性痘痘",
+            "symptoms": ["红肿", "疼痛", "脓包"],
+            "severity_levels": {
+                "mild": "少量红肿",
+                "moderate": "多个红肿",
+                "severe": "大面积红肿和脓包"
+            },
+            "related_conditions": ["敏感", "油性"],
+            "treatment_approaches": [
+                {
+                    "level": "mild",
+                    "recommendations": ["温和清洁", "控油", "抗炎"]
+                },
+                {
+                    "level": "moderate",
+                    "recommendations": ["专业清洁", "抗炎精华", "控油调理"]
+                },
+                {
+                    "level": "severe",
+                    "recommendations": ["医疗建议", "专业护理", "系统性治疗"]
+                }
+            ]
+        },
+        {
+            "name": "comedonal_acne",
+            "description": "粉刺型痘痘",
+            "symptoms": ["黑头", "白头", "闭口"],
+            "severity_levels": {
+                "mild": "少量粉刺",
+                "moderate": "多个粉刺",
+                "severe": "大面积粉刺"
+            },
+            "related_conditions": ["毛孔粗大", "油性"],
+            "treatment_approaches": [
+                {
+                    "level": "mild",
+                    "recommendations": ["深层清洁", "控油", "去角质"]
+                },
+                {
+                    "level": "moderate",
+                    "recommendations": ["专业清洁", "控油精华", "定期护理"]
+                },
+                {
+                    "level": "severe",
+                    "recommendations": ["专业护理", "医疗建议", "系统性治疗"]
+                }
+            ]
+        }
+    ]
+} 

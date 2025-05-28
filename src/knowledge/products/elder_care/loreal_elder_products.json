@@ -1,0 +1,369 @@
+{
+    "version": "1.0",
+    "products": [
+        {
+            "id": "LE001",
+            "name": "复颜抗皱紧致滋润霜",
+            "category": "面霜",
+            "suitable_age": "50+",
+            "skin_type": ["干性", "中性", "混合性"],
+            "key_ingredients": [
+                "视黄醇",
+                "胶原蛋白",
+                "透明质酸"
+            ],
+            "benefits": [
+                "抗皱",
+                "紧致",
+                "滋润"
+            ],
+            "elder_friendly_features": {
+                "packaging": "大字体标签",
+                "container": "易开盖设计",
+                "cap_type": "易开启设计",
+                "usage_instructions": "简单清晰的使用步骤"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚洁面后",
+                    "取适量产品",
+                    "均匀涂抹于面部"
+                ],
+                "precautions": "避免接触眼睛周围区域"
+            },
+            "price_range": "中等",
+            "size": "50ml",
+            "price": "198元"
+        },
+        {
+            "id": "LE002",
+            "name": "金致臻颜奢养面霜",
+            "category": "面霜",
+            "suitable_age": "60+",
+            "skin_type": ["干性", "松弛", "皱纹", "暗沉"],
+            "key_ingredients": [
+                "24K黄金精粹",
+                "Pro-Xylane™",
+                "透明质酸"
+            ],
+            "benefits": [
+                "抗衰老",
+                "紧致",
+                "提亮",
+                "保湿"
+            ],
+            "elder_friendly_features": {
+                "packaging": "奢华包装",
+                "container": "防滑瓶身设计",
+                "cap_type": "易拧开盖子",
+                "usage_instructions": "简单明了的使用方法"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚洁面后",
+                    "取适量产品",
+                    "轻柔按摩至吸收"
+                ],
+                "precautions": "温和不刺激"
+            },
+            "price_range": "高端",
+            "size": "50ml",
+            "price": "398元"
+        },
+        {
+            "id": "LE003",
+            "name": "复颜玻尿酸水光充盈全脸淡纹精华液",
+            "category": "精华",
+            "suitable_age": "50+",
+            "skin_type": ["干性", "缺水", "细纹"],
+            "key_ingredients": [
+                "1.5%纯玻尿酸",
+                "维生素CG",
+                "甘油"
+            ],
+            "benefits": [
+                "补水",
+                "淡纹",
+                "提亮"
+            ],
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "滴管设计易于控制用量",
+                "cap_type": "易开启",
+                "usage_instructions": "简单精确的使用方法"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚洁面后",
+                    "取3-4滴",
+                    "轻拍吸收"
+                ],
+                "precautions": "不含酒精，温和配方"
+            },
+            "price_range": "中高端",
+            "size": "30ml",
+            "price": "259元"
+        },
+        {
+            "id": "LE004",
+            "name": "复颜抗皱紧致眼霜",
+            "category": "眼霜",
+            "suitable_age": "50+",
+            "skin_type": ["眼部皱纹", "眼袋", "黑眼圈"],
+            "key_ingredients": [
+                "Pro-Retinol A",
+                "弹力蛋白",
+                "咖啡因"
+            ],
+            "benefits": [
+                "抗皱",
+                "紧致",
+                "淡化黑眼圈"
+            ],
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "小巧易握",
+                "cap_type": "精确涂抹头",
+                "usage_instructions": "简单易用"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚取适量",
+                    "轻轻点按眼周"
+                ],
+                "precautions": "温和不刺激眼睛"
+            },
+            "price_range": "中等",
+            "size": "15ml",
+            "price": "168元"
+        },
+        {
+            "id": "LE005",
+            "name": "清润多重活性保湿乳液",
+            "category": "乳液",
+            "suitable_age": "50+",
+            "skin_type": ["干性", "敏感"],
+            "key_ingredients": [
+                "法国温泉水",
+                "甘油",
+                "维生素E"
+            ],
+            "benefits": [
+                "保湿",
+                "舒缓",
+                "修护"
+            ],
+            "elder_friendly_features": {
+                "packaging": "大字体标签",
+                "container": "泵头设计易于取用",
+                "cap_type": "按压式",
+                "usage_instructions": "简单易用"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚洁面后",
+                    "取适量",
+                    "均匀涂抹"
+                ],
+                "precautions": "无刺激性"
+            },
+            "price_range": "经济型",
+            "size": "100ml",
+            "price": "119元"
+        },
+        {
+            "id": "LE006",
+            "name": "金致臻颜奢养洁面乳",
+            "category": "洁面",
+            "suitable_age": "60+",
+            "skin_type": ["干性", "敏感"],
+            "key_ingredients": [
+                "氨基酸表活",
+                "甘油",
+                "维生素B5"
+            ],
+            "benefits": [
+                "温和清洁",
+                "保湿",
+                "舒缓"
+            ],
+            "elder_friendly_features": {
+                "packaging": "大字体标签",
+                "container": "直立设计稳定不易倒",
+                "cap_type": "易开启",
+                "usage_instructions": "简单清晰"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚取适量",
+                    "加水起泡",
+                    "轻柔按摩",
+                    "清水洗净"
+                ],
+                "precautions": "避免接触眼睛"
+            },
+            "price_range": "中高端",
+            "size": "125ml",
+            "price": "159元"
+        },
+        {
+            "id": "LE007",
+            "name": "复颜积雪草微精华水",
+            "category": "爽肤水",
+            "suitable_age": "50+",
+            "skin_type": ["干性", "敏感", "泛红"],
+            "key_ingredients": [
+                "积雪草精华",
+                "甘油",
+                "泛醇"
+            ],
+            "benefits": [
+                "舒缓",
+                "修护",
+                "保湿"
+            ],
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "大瓶口设计",
+                "cap_type": "防滑瓶身",
+                "usage_instructions": "简单易用"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚洁面后",
+                    "倒适量于化妆棉轻拍或直接用手按压"
+                ],
+                "precautions": "无酒精配方"
+            },
+            "price_range": "中高端",
+            "size": "175ml",
+            "price": "189元"
+        },
+        {
+            "id": "LE008",
+            "name": "复颜多效修护颈霜",
+            "category": "颈霜",
+            "suitable_age": "45+",
+            "skin_type": ["颈部皱纹", "松弛", "暗沉"],
+            "key_ingredients": [
+                "Pro-Xylane™",
+                "透明质酸",
+                "维生素E"
+            ],
+            "benefits": [
+                "抗皱",
+                "紧致",
+                "提亮"
+            ],
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "宽口设计易取用",
+                "cap_type": "易开启",
+                "usage_instructions": "专为颈部肌肤定制"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚洁面后",
+                    "取适量",
+                    "从下至上按摩颈部至完全吸收"
+                ],
+                "precautions": "温和配方"
+            },
+            "price_range": "中高端",
+            "size": "50ml",
+            "price": "228元"
+        },
+        {
+            "id": "LE009",
+            "name": "复颜抗皱紧致精华乳",
+            "category": "精华乳",
+            "suitable_age": "55+",
+            "skin_type": ["皱纹", "松弛", "干燥"],
+            "key_ingredients": [
+                "视黄醇",
+                "胶原蛋白",
+                "透明质酸"
+            ],
+            "benefits": [
+                "抗皱",
+                "紧致",
+                "滋润"
+            ],
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "防滑瓶身",
+                "cap_type": "精准涂抹头",
+                "usage_instructions": "易握设计"
+            },
+            "usage": {
+                "frequency": "每日两次",
+                "steps": [
+                    "早晚洁面后",
+                    "取适量",
+                    "均匀涂抹于面部",
+                    "轻轻按摩至吸收"
+                ],
+                "precautions": "避免接触眼睛"
+            },
+            "price_range": "中高端",
+            "size": "30ml",
+            "price": "259元"
+        },
+        {
+            "id": "LE010",
+            "name": "复颜抗皱紧致防晒乳SPF50+",
+            "category": "防晒",
+            "suitable_age": "50+",
+            "skin_type": ["所有肤质"],
+            "key_ingredients": [
+                "UVA/UVB防晒因子",
+                "维生素E",
+                "透明质酸"
+            ],
+            "benefits": [
+                "防晒",
+                "抗氧化",
+                "保湿"
+            ],
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "易握设计",
+                "cap_type": "易开盖设计",
+                "usage_instructions": "简单易用"
+            },
+            "usage": {
+                "frequency": "每日使用",
+                "steps": [
+                    "早晨出门前15-30分钟",
+                    "取适量",
+                    "均匀涂抹于面部"
+                ],
+                "precautions": "不泛白，温和无刺激"
+            },
+            "price_range": "中高端",
+            "size": "30ml",
+            "price": "198元"
+        }
+    ],
+    "metadata": {
+        "total_products": 10,
+        "categories": ["面霜", "精华液", "洁面乳", "眼霜", "乳液", "爽肤水", "颈霜", "防晒"],
+        "target_audience": "中老年人群",
+        "special_considerations": [
+            "适合敏感肌肤",
+            "无刺激性配方",
+            "易于使用的包装设计",
+            "大字体标签",
+            "防滑设计",
+            "易开启瓶盖"
+        ]
+    }
+} 

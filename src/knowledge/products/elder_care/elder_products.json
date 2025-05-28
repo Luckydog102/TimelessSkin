@@ -1,0 +1,248 @@
+{
+    "version": "1.0",
+    "products": [
+        {
+            "id": "EP001",
+            "name": "欧莱雅复颜抗皱紧致滋润霜",
+            "specification": "50ML",
+            "category": "面霜",
+            "tags": ["抗皱", "紧致", "滋润"],
+            "details": "专为成熟肌肤设计，有效抗皱紧致，滋润保湿，缓解皮肤干燥紧绷感",
+            "ingredients_effects": {
+                "key_ingredients": ["视黄醇", "胶原蛋白", "透明质酸"],
+                "effects": ["抗皱", "紧致", "滋润", "保湿"]
+            },
+            "usage": "早晚洁面后，取适量均匀涂抹于面部",
+            "price": "198元",
+            "elder_friendly_features": {
+                "packaging": "大字体标签",
+                "container": "易开盖设计",
+                "cap_type": "易开启设计",
+                "usage_instructions": "简单清晰的使用步骤"
+            },
+            "suitable_skin_types": ["干性", "中性", "混合性"],
+            "suitable_age": "50+",
+            "link": ""
+        },
+        {
+            "id": "EP002",
+            "name": "欧莱雅金致臻颜奢养面霜",
+            "specification": "50ML",
+            "category": "面霜",
+            "tags": ["抗衰老", "紧致", "提亮", "保湿"],
+            "details": "奢华抗老配方，密集修护，提升肌肤弹性与光泽，适合60岁以上肌肤",
+            "ingredients_effects": {
+                "key_ingredients": ["24K黄金精粹", "Pro-Xylane™", "透明质酸"],
+                "effects": ["抗衰老", "紧致", "提亮", "保湿"]
+            },
+            "usage": "早晚洁面后，取适量轻柔按摩至吸收",
+            "price": "398元",
+            "elder_friendly_features": {
+                "packaging": "奢华包装",
+                "container": "防滑瓶身设计",
+                "cap_type": "易拧开盖子",
+                "usage_instructions": "简单明了的使用方法"
+            },
+            "suitable_skin_types": ["干性", "松弛", "皱纹", "暗沉"],
+            "suitable_age": "60+",
+            "link": ""
+        },
+        {
+            "id": "EP003",
+            "name": "欧莱雅复颜玻尿酸水光充盈全脸淡纹精华液",
+            "specification": "30ML",
+            "category": "精华",
+            "tags": ["补水", "淡纹", "提亮"],
+            "details": "高浓度玻尿酸配方，深层补水，淡化细纹，适合50岁以上缺水肌肤",
+            "ingredients_effects": {
+                "key_ingredients": ["1.5%纯玻尿酸", "维生素CG", "甘油"],
+                "effects": ["补水", "淡纹", "提亮"]
+            },
+            "usage": "早晚洁面后，取3-4滴轻拍吸收",
+            "price": "259元",
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "滴管设计易于控制用量",
+                "cap_type": "易开启",
+                "usage_instructions": "简单精确的使用方法"
+            },
+            "suitable_skin_types": ["干性", "缺水", "细纹"],
+            "suitable_age": "50+",
+            "link": ""
+        },
+        {
+            "id": "EP004",
+            "name": "欧莱雅复颜抗皱紧致眼霜",
+            "specification": "15ML",
+            "category": "眼霜",
+            "tags": ["抗皱", "紧致", "淡化黑眼圈"],
+            "details": "专注改善眼周细纹、眼袋和黑眼圈，适合50岁以上眼部肌肤",
+            "ingredients_effects": {
+                "key_ingredients": ["Pro-Retinol A", "弹力蛋白", "咖啡因"],
+                "effects": ["抗皱", "紧致", "淡化黑眼圈"]
+            },
+            "usage": "早晚取适量，轻轻点按眼周",
+            "price": "168元",
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "小巧易握",
+                "cap_type": "精确涂抹头",
+                "usage_instructions": "简单易用"
+            },
+            "suitable_skin_types": ["眼部皱纹", "眼袋", "黑眼圈"],
+            "suitable_age": "50+",
+            "link": ""
+        },
+        {
+            "id": "EP005",
+            "name": "欧莱雅清润多重活性保湿乳液",
+            "specification": "100ML",
+            "category": "乳液",
+            "tags": ["保湿", "舒缓", "修护"],
+            "details": "温和保湿，舒缓敏感，适合敏感中老年肌肤，不含酒精和香料",
+            "ingredients_effects": {
+                "key_ingredients": ["法国温泉水", "甘油", "维生素E"],
+                "effects": ["保湿", "舒缓", "修护"]
+            },
+            "usage": "早晚洁面后，取适量均匀涂抹",
+            "price": "119元",
+            "elder_friendly_features": {
+                "packaging": "大字体标签",
+                "container": "泵头设计易于取用",
+                "cap_type": "按压式",
+                "usage_instructions": "简单易用"
+            },
+            "suitable_skin_types": ["干性", "敏感"],
+            "suitable_age": "50+",
+            "link": ""
+        },
+        {
+            "id": "EP006",
+            "name": "欧莱雅金致臻颜奢养洁面乳",
+            "specification": "125ML",
+            "category": "洁面",
+            "tags": ["温和清洁", "保湿", "舒缓"],
+            "details": "温和清洁不紧绷，适合60岁以上干燥敏感肌肤，保留肌肤天然保湿屏障",
+            "ingredients_effects": {
+                "key_ingredients": ["氨基酸表活", "甘油", "维生素B5"],
+                "effects": ["温和清洁", "保湿", "舒缓"]
+            },
+            "usage": "早晚取适量，加水起泡后轻柔按摩，清水洗净",
+            "price": "159元",
+            "elder_friendly_features": {
+                "packaging": "大字体标签",
+                "container": "直立设计稳定不易倒",
+                "cap_type": "易开启",
+                "usage_instructions": "简单清晰"
+            },
+            "suitable_skin_types": ["干性", "敏感"],
+            "suitable_age": "60+",
+            "link": ""
+        },
+        {
+            "id": "EP007",
+            "name": "欧莱雅复颜积雪草微精华水",
+            "specification": "175ML",
+            "category": "爽肤水",
+            "tags": ["舒缓", "修护", "保湿"],
+            "details": "舒缓修护，增强肌肤屏障，适合50岁以上敏感肌肤，缓解泛红不适",
+            "ingredients_effects": {
+                "key_ingredients": ["积雪草精华", "甘油", "泛醇"],
+                "effects": ["舒缓", "修护", "保湿"]
+            },
+            "usage": "早晚洁面后，倒适量于化妆棉轻拍或直接用手按压",
+            "price": "189元",
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "大瓶口设计",
+                "cap_type": "防滑瓶身",
+                "usage_instructions": "简单易用"
+            },
+            "suitable_skin_types": ["干性", "敏感", "泛红"],
+            "suitable_age": "50+",
+            "link": ""
+        },
+        {
+            "id": "EP008",
+            "name": "欧莱雅复颜多效修护颈霜",
+            "specification": "50ML",
+            "category": "颈霜",
+            "tags": ["抗皱", "紧致", "提亮"],
+            "details": "专为颈部松弛皱纹设计，改善颈纹，紧致提升，适合45岁以上肌肤",
+            "ingredients_effects": {
+                "key_ingredients": ["Pro-Xylane™", "透明质酸", "维生素E"],
+                "effects": ["抗皱", "紧致", "提亮"]
+            },
+            "usage": "早晚洁面后，取适量从下至上按摩颈部至完全吸收",
+            "price": "228元",
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "宽口设计易取用",
+                "cap_type": "易开启",
+                "usage_instructions": "专为颈部肌肤定制"
+            },
+            "suitable_skin_types": ["颈部皱纹", "松弛", "暗沉"],
+            "suitable_age": "45+",
+            "link": ""
+        },
+        {
+            "id": "EP009",
+            "name": "欧莱雅复颜抗皱紧致精华乳",
+            "specification": "30ML",
+            "category": "精华乳",
+            "tags": ["抗皱", "紧致", "滋润"],
+            "details": "浓缩抗皱精华，密集改善皱纹，提升弹性，适合55岁以上肌肤",
+            "ingredients_effects": {
+                "key_ingredients": ["视黄醇", "胶原蛋白", "透明质酸"],
+                "effects": ["抗皱", "紧致", "滋润"]
+            },
+            "usage": "早晚洁面后，取适量均匀涂抹于面部，轻轻按摩至吸收",
+            "price": "259元",
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "防滑瓶身",
+                "cap_type": "精准涂抹头",
+                "usage_instructions": "易握设计"
+            },
+            "suitable_skin_types": ["皱纹", "松弛", "干燥"],
+            "suitable_age": "55+",
+            "link": ""
+        },
+        {
+            "id": "EP010",
+            "name": "欧莱雅复颜抗皱紧致防晒乳SPF50+",
+            "specification": "30ML",
+            "category": "防晒",
+            "tags": ["防晒", "抗氧化", "保湿"],
+            "details": "高倍防晒同时兼具抗老功效，适合50岁以上外出活动的肌肤",
+            "ingredients_effects": {
+                "key_ingredients": ["UVA/UVB防晒因子", "维生素E", "透明质酸"],
+                "effects": ["防晒", "抗氧化", "保湿"]
+            },
+            "usage": "早晨出门前15-30分钟，取适量均匀涂抹于面部",
+            "price": "198元",
+            "elder_friendly_features": {
+                "packaging": "清晰标签",
+                "container": "易握设计",
+                "cap_type": "易开盖设计",
+                "usage_instructions": "简单易用"
+            },
+            "suitable_skin_types": ["所有肤质"],
+            "suitable_age": "50+",
+            "link": ""
+        }
+    ],
+    "metadata": {
+        "total_products": 10,
+        "categories": ["面霜", "精华液", "洁面乳", "眼霜", "乳液", "爽肤水", "颈霜", "防晒"],
+        "target_audience": "中老年人群",
+        "special_considerations": [
+            "适合敏感肌肤",
+            "无刺激性配方",
+            "易于使用的包装设计",
+            "大字体标签",
+            "防滑设计",
+            "易开启瓶盖"
+        ]
+    }
+} 

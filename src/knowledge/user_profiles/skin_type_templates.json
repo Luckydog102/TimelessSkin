@@ -1,0 +1,56 @@
+{
+    "skin_types": [
+        {
+            "type": "oily",
+            "description": "油性肌肤",
+            "characteristics": ["出油多", "毛孔粗大", "易长痘"],
+            "concerns": ["控油", "痘痘", "毛孔"],
+            "recommended_products": ["控油洁面", "清爽保湿", "控油精华"],
+            "avoid": ["厚重面霜", "油性成分", "过度清洁"],
+            "care_tips": [
+                "使用温和控油产品",
+                "保持适度清洁",
+                "注意防晒"
+            ]
+        },
+        {
+            "type": "dry",
+            "description": "干性肌肤",
+            "characteristics": ["缺水", "紧绷", "易起皮"],
+            "concerns": ["保湿", "滋润", "抗衰老"],
+            "recommended_products": ["温和洁面", "保湿精华", "滋润面霜"],
+            "avoid": ["过度清洁", "酒精成分", "刺激性产品"],
+            "care_tips": [
+                "注重保湿",
+                "使用滋润产品",
+                "避免过度清洁"
+            ]
+        },
+        {
+            "type": "combination",
+            "description": "混合性肌肤",
+            "characteristics": ["T区油", "两颊干", "毛孔不均"],
+            "concerns": ["水油平衡", "局部控油", "整体保湿"],
+            "recommended_products": ["平衡洁面", "分区护理", "保湿精华"],
+            "avoid": ["过度控油", "过度滋润"],
+            "care_tips": [
+                "分区护理",
+                "保持水油平衡",
+                "注意防晒"
+            ]
+        },
+        {
+            "type": "sensitive",
+            "description": "敏感性肌肤",
+            "characteristics": ["易泛红", "易过敏", "易刺痛"],
+            "concerns": ["舒缓", "修复", "维稳"],
+            "recommended_products": ["温和洁面", "舒缓精华", "修复面霜"],
+            "avoid": ["刺激性成分", "酒精", "香精"],
+            "care_tips": [
+                "使用温和产品",
+                "避免刺激",
+                "注重修复"
+            ]
+        }
+    ]
+} 
