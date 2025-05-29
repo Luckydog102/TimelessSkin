@@ -82,7 +82,7 @@ usage:
         - "帮我推荐一款适合干性皮肤的面霜"
       description: 基于用户需求推荐合适的护肤产品
 
-license: Apache License 2.0
+license: MIT License
 
 author:
   name: luckydog123
