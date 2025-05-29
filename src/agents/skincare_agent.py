@@ -9,10 +9,11 @@ class SkinCareAgent:
     """护肤顾问Agent"""
     
     def __init__(self):
+        # 首先加载配置
+        self._load_config()
         # 初始化VLM模型和RAG引擎
         self.vlm_model = VLMModel()
         self.vlm_model.initialize()
-        self._load_config()
         self.rag_engine = RAGEngine(self.config)
         self.prompts = {
             "skin_analysis": SKIN_ANALYSIS_PROMPT

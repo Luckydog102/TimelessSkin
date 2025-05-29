@@ -31,19 +31,27 @@ class KnowledgeManager:
         """初始化知识库"""
         try:
             if not self._initialized:
-                self._load_knowledge()
+                try:
+                    self._load_knowledge()
+                except Exception as e:
+                    logger.warning(f"加载知识库失败，将使用空知识库运行: {e}")
+                    self.documents = []
+                    
                 self._build_index()
                 self._initialized = True
-                logger.info("知识库初始化成功")
+                logger.info("知识库初始化完成")
         except Exception as e:
             logger.error(f"知识库初始化失败: {e}")
             # 设置为初始化状态，但允许系统继续运行
             self._initialized = True
+            self.documents = []
+            self.embeddings_matrix = np.zeros((0, 768), dtype='float32')
+            self.vector_index = faiss.IndexFlatL2(768)
 
     def _load_knowledge(self) -> None:
         """加载知识库文件"""
         try:
-            # 使用相对路径
+            # 修改为src/knowledge目录
             base_path = Path(os.path.join(os.path.dirname(os.path.dirname(__file__)), "knowledge"))
             logger.info(f"加载知识库路径: {base_path}")
             

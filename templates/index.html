@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimelessSkin 智能护肤顾问</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        .message {
+            max-width: 80%;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">TimelessSkin 智能护肤顾问</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 左侧：对话区域 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div id="chat-messages" class="chat-container overflow-y-auto mb-4">
+                    <!-- 消息将在这里动态添加 -->
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="message-input" 
+                           class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="输入您的问题...">
+                    <button onclick="sendMessage()" 
+                            class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 focus:outline-none">
+                        发送
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧：图片上传和分析区域 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-4">您是为谁咨询？</h2>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="user-type" value="self" class="mr-2">
+                            <span>为自己寻找护肤建议</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="user-type" value="elder" class="mr-2">
+                            <span>为家中长辈寻找合适的护肤品</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="user-type" value="other" class="mr-2">
+                            <span>其他需求</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-4">上传面部照片（可选）</h2>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <input type="file" id="image-upload" accept="image/*" class="hidden">
+                        <label for="image-upload" class="cursor-pointer">
+                            <div class="space-y-2">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <div class="text-sm text-gray-600">
+                                    点击上传图片<br>或将图片拖放到此处
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="startAnalysis()" 
+                        class="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 focus:outline-none">
+                    开始分析
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量存储对话状态
+        let chatHistory = [];
+        let currentUserType = '';
+
+        // 初始化页面
+        window.onload = async function() {
+            // 发送开始对话请求
+            const response = await fetch('/api/chat/start');
+            const data = await response.json();
+            addMessage(data.message, 'bot');
+        }
+
+        // 添加消息到对话界面
+        function addMessage(message, type) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            chatHistory.push({type, message});
+        }
+
+        // 发送消息
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        user_type: currentUserType,
+                        context: {
+                            history: chatHistory
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                addMessage(data.message, 'bot');
+
+                if (data.next_action) {
+                    handleNextAction(data);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('抱歉，发生了错误，请稍后重试。', 'bot');
+            }
+        }
+
+        // 处理下一步操作
+        function handleNextAction(data) {
+            if (data.next_action === 'select_age_group' || data.next_action === 'select_concerns') {
+                const options = data.data.options;
+                const optionsMessage = '请选择：\n' + options.map((opt, idx) => `${idx + 1}. ${opt}`).join('\n');
+                addMessage(optionsMessage, 'bot');
+            }
+        }
+
+        // 开始分析
+        async function startAnalysis() {
+            const fileInput = document.getElementById('image-upload');
+            const userType = document.querySelector('input[name="user-type"]:checked');
+
+            if (!userType) {
+                addMessage('请先选择您是为谁咨询', 'bot');
+                return;
+            }
+
+            currentUserType = userType.value;
+
+            if (fileInput.files.length > 0) {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('user_type', currentUserType);
+
+                try {
+                    const response = await fetch('/api/analysis/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        addMessage('图片上传成功！正在分析...', 'bot');
+                        addMessage(`分析结果：\n${JSON.stringify(data.analysis, null, 2)}`, 'bot');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    addMessage('抱歉，图片上传失败，请稍后重试。', 'bot');
+                }
+            } else {
+                // 如果没有上传图片，直接开始对话式咨询
+                const response = await fetch('/api/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: '开始咨询',
+                        user_type: currentUserType
+                    })
+                });
+
+                const data = await response.json();
+                addMessage(data.message, 'bot');
+            }
+        }
+
+        // 监听回车键发送消息
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html> 
