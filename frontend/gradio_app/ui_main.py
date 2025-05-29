@@ -22,13 +22,30 @@ logger = logging.getLogger(__name__)
 
 # 初始化模型
 try:
-    advisor = AdvisorGraph()  # 包含VLM模型
+    # 首先初始化LLM模型
     llm = LLMModel()
-    rag = RAGModel()
     llm.initialize()
-    rag.initialize()
+    logger.info("LLM模型初始化成功")
+    
+    try:
+        # 尝试初始化RAG模型
+        rag = RAGModel()
+        rag.initialize()
+        logger.info("RAG模型初始化成功")
+    except Exception as e:
+        logger.warning(f"RAG模型初始化失败，将以基础对话模式运行: {e}")
+        rag = None
+    
+    try:
+        # 尝试初始化Advisor
+        advisor = AdvisorGraph()
+        logger.info("Advisor初始化成功")
+    except Exception as e:
+        logger.warning(f"Advisor初始化失败，部分功能可能受限: {e}")
+        advisor = None
+    
 except Exception as e:
-    logger.error(f"初始化模型失败: {e}")
+    logger.error(f"LLM模型初始化失败: {e}")
     raise
 
 def get_initial_prompt(user_type: str = None) -> str:
@@ -316,7 +333,12 @@ def safe_llm_call(message, system_message="", stream=True):
         
         # 简单问候直接返回
         if message.strip().lower() in ["你好", "hello", "hi", "嗨", "您好"]:
-            return "您好！我是您的智能护肤顾问。请问您今天有什么护肤方面的问题需要咨询吗？"
+            greeting = "您好！我是您的智能护肤顾问。请问您今天有什么护肤方面的问题需要咨询吗？"
+            if stream:
+                for char in greeting:
+                    yield char
+            else:
+                return greeting
         
         try:
             # 构建完整的提示
@@ -327,31 +349,31 @@ def safe_llm_call(message, system_message="", stream=True):
 
 请以护肤顾问的身份回复上述用户问题，提供专业、友好的建议。
 """
-            # 使用流式输出或普通输出
             if stream:
-                return llm.chat_stream(full_prompt)
+                # 使用流式输出
+                for chunk in llm.chat_stream(message=full_prompt, system_message="", temperature=0.7):
+                    yield chunk
             else:
-                # 使用predict方法而不是chat方法
-                response = llm.predict(full_prompt)
-                
-                # 检查响应
-                if not response or not isinstance(response, str):
-                    return "抱歉，我现在遇到了一些问题，请稍后再试。"
-                    
-                logger.info(f"模型返回的响应: {response[:100] if len(response) > 100 else response}...")
-                return response
-            
-        except IndexError as e:
-            logger.error(f"LLM调用出现IndexError: {str(e)}")
-            return "抱歉，处理您的请求时出现了问题。请尝试重新提问或换一种表述方式。"
+                # 使用非流式输出
+                return llm.chat(message=full_prompt, system_message="", temperature=0.7)
             
         except Exception as e:
             logger.error(f"LLM调用出现异常: {str(e)}")
-            return "抱歉，我现在遇到了一些技术问题，请稍后再试。"
+            error_msg = "抱歉，我现在遇到了一些技术问题，请稍后再试。"
+            if stream:
+                for char in error_msg:
+                    yield char
+            else:
+                return error_msg
             
     except Exception as e:
         logger.error(f"安全调用LLM时出现错误: {str(e)}")
-        return "抱歉，系统暂时无法处理您的请求。请稍后再试。"
+        error_msg = "抱歉，系统暂时无法处理您的请求。请稍后再试。"
+        if stream:
+            for char in error_msg:
+                yield char
+        else:
+            return error_msg
 
 def user_message_and_response(message, chat_history, state_data):
     """处理用户消息并生成回复"""
@@ -359,7 +381,7 @@ def user_message_and_response(message, chat_history, state_data):
         return "", chat_history
     
     # 立即添加用户消息到历史记录
-    chat_history.append((message, None))
+    chat_history.append((message, ""))
     
     try:
         # 构建系统消息
@@ -369,45 +391,28 @@ def user_message_and_response(message, chat_history, state_data):
         if state_data and isinstance(state_data, dict):
             if state_data.get("consultation_type"):
                 system_message += f"当前咨询类型：{state_data['consultation_type']}\n"
-                
-                # 根据不同咨询类型添加特定指导
-                if state_data['consultation_type'] == "为自己咨询":
-                    system_message += "用户正在为自己咨询护肤建议。请关注个人肤质特点和护肤需求。\n"
-                elif state_data['consultation_type'] == "为长辈咨询":
-                    system_message += "用户正在为长辈咨询护肤建议。请关注成熟肌肤的特点和需求，提供适合年长者的护肤建议。\n"
-                elif state_data['consultation_type'] == "其他需求":
-                    system_message += "用户有其他护肤相关需求。请根据用户的具体问题提供相应建议。\n"
-            
-            # 添加皮肤分析结果（如果有）
             if state_data.get("skin_analysis"):
                 system_message += f"皮肤分析结果：{state_data['skin_analysis']}\n"
-                
-            # 添加用户画像信息（如果有）
-            if state_data.get("profile") and isinstance(state_data["profile"], dict):
+            if state_data.get("profile"):
                 profile = state_data["profile"]
-                if profile.get("age_group") and profile["age_group"] != "未知":
+                if profile.get("age_group"):
                     system_message += f"用户年龄段：{profile['age_group']}\n"
-                    
-                if profile.get("skin_type") and isinstance(profile["skin_type"], dict) and profile["skin_type"].get("name") != "未知":
+                if profile.get("skin_type", {}).get("name"):
                     system_message += f"用户肤质：{profile['skin_type']['name']}\n"
-                    
-                if profile.get("concerns") and isinstance(profile["concerns"], dict) and profile["concerns"].get("primary"):
-                    if isinstance(profile["concerns"]["primary"], list) and profile["concerns"]["primary"]:
-                        try:
-                            concerns = ", ".join(profile["concerns"]["primary"])
-                            system_message += f"用户主要护肤困扰：{concerns}\n"
-                        except Exception as e:
-                            logger.error(f"处理用户护肤困扰时出错: {e}")
         
         # 使用安全的LLM调用，启用流式输出
-        response = safe_llm_call(message, system_message, stream=True)
+        response_generator = safe_llm_call(message, system_message, stream=True)
         
-        # 更新最后一条消息，添加助手回复
-        chat_history[-1] = (message, response)
-        
-        # 更新用户画像（如果需要）
+        # 流式输出响应
+        current_response = ""
+        for chunk in response_generator:
+            current_response += chunk
+            chat_history[-1] = (message, current_response)
+            yield "", chat_history
+            
+        # 更新用户画像
         try:
-            if message and len(message.strip()) > 0:  # 确保消息不为空
+            if message and len(message.strip()) > 0:
                 new_profile = analyze_user_profile(message)
                 if new_profile and isinstance(new_profile, dict):
                     if not state_data.get("profile"):
@@ -415,27 +420,10 @@ def user_message_and_response(message, chat_history, state_data):
                     else:
                         # 更新现有画像
                         current_profile = state_data["profile"]
-                        
-                        # 更新年龄段
-                        if new_profile.get("age_group") and new_profile["age_group"] != "未知":
+                        if new_profile.get("age_group") != "未知":
                             current_profile["age_group"] = new_profile["age_group"]
-                        
-                        # 更新肤质信息
-                        if new_profile.get("skin_type") and isinstance(new_profile["skin_type"], dict):
-                            if new_profile["skin_type"].get("name") != "未知":
-                                current_profile["skin_type"].update(new_profile["skin_type"])
-                        
-                        # 更新护肤困扰
-                        if new_profile.get("concerns") and isinstance(new_profile["concerns"], dict):
-                            if new_profile["concerns"].get("primary") and isinstance(new_profile["concerns"]["primary"], list):
-                                for concern in new_profile["concerns"]["primary"]:
-                                    if concern not in current_profile["concerns"]["primary"]:
-                                        current_profile["concerns"]["primary"].append(concern)
-                                        
-                            if new_profile["concerns"].get("secondary") and isinstance(new_profile["concerns"]["secondary"], list):
-                                for concern in new_profile["concerns"]["secondary"]:
-                                    if concern not in current_profile["concerns"]["secondary"]:
-                                        current_profile["concerns"]["secondary"].append(concern)
+                        if new_profile.get("skin_type", {}).get("name") != "未知":
+                            current_profile["skin_type"].update(new_profile["skin_type"])
         except Exception as e:
             logger.error(f"更新用户画像失败: {e}")
             # 继续处理，不影响主流程
@@ -616,9 +604,18 @@ def process_interaction(
                 if state.get("skin_analysis") and isinstance(state["skin_analysis"], str):
                     system_context += f"皮肤分析结果：{state['skin_analysis']}\n"
                 
-                # 使用安全的LLM调用
-                response = safe_llm_call(message, system_context)
-                history.append((message, response))
+                # 添加用户消息到历史记录
+                history.append((message, ""))
+                
+                # 使用安全的LLM调用，启用流式输出
+                response_generator = safe_llm_call(message, system_context, stream=True)
+                
+                # 流式输出响应
+                for chunk in response_generator:
+                    # 更新最后一条消息，追加新的文本块
+                    history[-1] = (message, history[-1][1] + chunk)
+                    yield "", history, state
+                
             except Exception as e:
                 logger.error(f"对话生成失败: {e}")
                 history.append((message, "抱歉，我现在遇到了一些问题，请稍后再试。"))
@@ -628,453 +625,296 @@ def process_interaction(
         logger.error(f"处理失败: {str(e)}")
         return "", history + [(None, f"抱歉，服务出现错误：{str(e)}")], state
 
+def on_select_type(choice, chat_history, state_data):
+    """处理咨询类型选择"""
+    try:
+        if not isinstance(chat_history, list):
+            chat_history = []
+        
+        if not isinstance(state_data, dict):
+            state_data = {"consultation_type": None, "skin_analysis": None, "profile": None}
+        
+        # 如果没有选择，则显示默认开场白
+        if not choice:
+            initial_message = get_initial_prompt()
+            chat_history = [(None, initial_message)]
+            state_data["consultation_type"] = None
+            return chat_history, state_data
+        
+        # 更新状态
+        state_data["consultation_type"] = choice
+        
+        # 将用户选择作为一条消息添加到对话历史
+        user_message = f"我想{choice}"
+        chat_history.append((user_message, None))
+        
+        # 获取对应的回复
+        response = get_initial_prompt(choice)
+        
+        # 更新消息回复
+        chat_history[-1] = (user_message, response)
+        
+        return chat_history, state_data
+        
+    except Exception as e:
+        logger.error(f"处理咨询类型选择失败: {e}")
+        # 返回一个基本的错误提示
+        error_message = "抱歉，处理您的选择时出现错误，请重试。"
+        return [(None, error_message)], {"consultation_type": None, "skin_analysis": None, "profile": None}
+
 def create_ui():
     with gr.Blocks(css="""
-        :root {
-            --primary-color: #C5002E;
-            --secondary-color: #F9F5F6;
-            --accent-color: #E3B8B8;
-            --text-color: #333333;
-            --light-text: #666666;
-            --border-radius-sm: 8px;
-            --border-radius-lg: 12px;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
-            --transition-speed: 0.2s;
-        }
-        
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #F8F9FA;
-            color: var(--text-color);
-        }
-        
-        /* 响应式布局 */
-        .container {
-            display: flex;
-            flex-direction: row;
-            min-height: calc(100vh - 32px);
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 16px;
-            gap: 20px;
-            background: #F8F9FA;
-        }
-        
-        @media (max-width: 992px) {
-            .container {
-                flex-direction: column;
-            }
-            .right-panel {
-                max-width: 100% !important;
-            }
-        }
-        
-        /* 顶部标题栏 */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
-            background: white;
-            border-radius: var(--border-radius-sm);
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-sm);
-        }
-        .header h1 {
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin: 0;
-        }
-        
-        /* 左侧面板 - 对话区域 */
-        .left-panel {
-            flex: 6;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            background: white;
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
-            height: calc(100vh - 80px);
-        }
-        
-        /* 右侧面板 */
-        .right-panel {
-            flex: 4;
-            min-width: 300px;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            height: calc(100vh - 80px);
-        }
-        
-        /* 聊天界面 */
-        .chatbot {
-            flex: 1;
-            min-height: 0 !important;
-            height: auto !important;
-            background: var(--secondary-color) !important;
+        .chatbot { 
+            height: calc(100vh - 120px) !important; 
             overflow-y: auto !important;
-            border-radius: 0 !important;
         }
-        
-        /* 消息气泡样式 */
-        .message {
-            padding: 0 !important;
-            background: transparent !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            max-width: 85% !important;
-            position: relative !important;
+        .gr-button { 
+            border-radius: 10px !important;
+            font-weight: bold !important; 
+            background: #6B5BFF !important; 
+            color: white !important;
+            transition: 0.3s ease !important;
+            border: none !important;
+            padding: 8px 16px !important;
+        }
+        .gr-button:hover {
+            background: #4B3BDD !important;
+            transform: translateY(-1px) !important;
+        }
+        .gr-box {
+            border-radius: 16px !important;
+            box-shadow: 0 0 12px rgba(0,0,0,0.06) !important;
+            padding: 16px !important;
+            margin-bottom: 16px !important;
+            background: white !important;
+        }
+        .section-title {
+            font-weight: bold !important;
+            font-size: 18px !important;
             margin-bottom: 12px !important;
+            color: #333 !important;
+        }
+        .upload-area {
+            border: 2px dashed #6B5BFF !important;
+            border-radius: 12px !important;
+            padding: 20px !important;
+            text-align: center !important;
+            background: #F8F8FF !important;
+            min-height: 140px !important;
+            transition: all 0.3s ease !important;
+        }
+        .upload-area:hover {
+            border-color: #4B3BDD !important;
+            background: #F0F0FF !important;
+        }
+        .type-buttons {
+            display: flex !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+            margin-bottom: 16px !important;
+            width: 100% !important;
+        }
+        .type-buttons > div {
+            display: flex !important;
+            width: 100% !important;
+            gap: 8px !important;
+        }
+        .type-buttons label {
+            flex: 1 1 0 !important;
+            background: #F8F8FF !important;
+            border: 2px solid #E0E0FF !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            margin: 0 !important;
+            transition: all 0.3s ease !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            font-size: 14px !important;
+            min-width: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .type-buttons label:hover {
+            border-color: #6B5BFF !important;
+            background: #F0F0FF !important;
+        }
+        .type-buttons label[data-selected="true"] {
+            background: #6B5BFF !important;
+            color: white !important;
+            border-color: #6B5BFF !important;
+        }
+        .message {
+            padding: 12px !important;
+            margin-bottom: 8px !important;
         }
         .message > div {
-            padding: 14px 18px !important;
-            border-radius: 18px !important;
+            padding: 12px 16px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
             background: white !important;
-            box-shadow: var(--shadow-sm) !important;
-            overflow-wrap: break-word !important;
-            white-space: pre-wrap !important;
-            position: relative !important;
         }
         .message.user-message > div {
-            background: #F9E8E8 !important; /* 欧莱雅浅粉色 */
-            border-radius: 18px !important;
-        }
-        
-        /* 复制按钮样式 */
-        .message .copy-button {
-            position: absolute !important;
-            bottom: 4px !important;
-            right: 4px !important;
-            opacity: 0 !important;
-            transition: opacity var(--transition-speed);
-            padding: 4px 8px !important;
-            font-size: 12px !important;
-            color: #666 !important;
-            background: rgba(255,255,255,0.8) !important;
-            border: none !important;
-            cursor: pointer !important;
-            border-radius: 4px !important;
-        }
-        .message:hover .copy-button {
-            opacity: 0.7 !important;
-        }
-        .message .copy-button:hover {
-            opacity: 1 !important;
-            background: rgba(255,255,255,0.95) !important;
-        }
-        
-        /* 输入区域 */
-        .input-area {
-            padding: 16px !important;
-            background: white !important;
-            border-top: 1px solid #E5E5E5 !important;
+            background: #F0F0FF !important;
+            border: 1px solid #E0E0FF !important;
         }
         .input-box textarea {
-            border-radius: 24px !important;
-            padding: 12px 20px !important;
-            line-height: 1.5 !important;
-            font-size: 15px !important;
+            border: 2px solid #E0E0FF !important;
+            border-radius: 12px !important;
+            padding: 12px !important;
+            background: white !important;
+            transition: all 0.3s ease !important;
+            margin: 0 !important;
+            height: 45px !important;
+            min-height: 45px !important;
             resize: none !important;
-            min-height: 48px !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-            transition: all var(--transition-speed) !important;
         }
         .input-box textarea:focus {
-            box-shadow: 0 2px 6px rgba(197,0,46,0.2) !important;
-            border-color: var(--primary-color) !important;
+            border-color: #6B5BFF !important;
+            box-shadow: 0 0 0 3px rgba(107,91,255,0.1) !important;
         }
-        
-        /* 按钮样式 */
-        .button-row {
-            margin-top: 12px !important;
+        .input-row {
             display: flex !important;
             gap: 12px !important;
-        }
-        .button-row button {
-            font-size: 14px !important;
-            padding: 8px 20px !important;
-            border-radius: 20px !important;
-            transition: all var(--transition-speed) !important;
-        }
-        button[variant="primary"] {
-            background: var(--primary-color) !important;
-            color: white !important;
-        }
-        button[variant="primary"]:hover {
-            background: #A50026 !important; /* 深红色 */
-            box-shadow: 0 2px 8px rgba(197,0,46,0.3) !important;
-        }
-        
-        /* 右侧区块样式 */
-        .right-section {
-            background: white;
-            border-radius: var(--border-radius-lg);
-            padding: 16px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 12px;
-        }
-        
-        /* 咨询类型区块 */
-        .consultation-section {
-            flex: 0 0 auto;
-        }
-        
-        /* 照片上传区块 */
-        .upload-section {
-            flex: 0 0 auto;
-        }
-        
-        /* 使用说明区块 */
-        .instructions-section {
-            flex: 0 0 auto;
-        }
-        
-        /* 上传区域 */
-        .upload-area {
-            border: 2px dashed var(--accent-color);
-            border-radius: var(--border-radius-sm);
-            padding: 12px;
-            text-align: center;
-            transition: all var(--transition-speed);
-            cursor: pointer;
-            height: 180px !important;
-            max-height: 180px !important;
-            overflow: hidden;
-        }
-        
-        /* 分析按钮 */
-        .analyze-button {
-            width: 100% !important;
-            background: var(--primary-color) !important;
-            color: white !important;
-            padding: 10px !important;
-            border-radius: var(--border-radius-sm) !important;
-            font-size: 14px !important;
-            font-weight: 500 !important;
-            margin-top: 12px !important;
-            margin-bottom: 8px !important;
-            transition: all var(--transition-speed) !important;
-        }
-        
-        /* 使用说明 */
-        .instructions {
-            color: var(--light-text);
-            font-size: 13px;
-            line-height: 1.4;
-        }
-        .instructions ol {
-            margin: 8px 0;
-            padding-left: 20px;
-        }
-        .instructions li {
-            margin-bottom: 6px;
-        }
-        
-        /* 上传提示文字 */
-        .upload-hint {
-            color: var(--light-text);
-            font-size: 13px;
-            margin: 8px 0;
-            line-height: 1.4;
-        }
-        
-        /* 区块标题 */
-        .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        /* 咨询类型提示 */
-        .type-hint {
-            font-size: 13px;
-            color: var(--light-text);
-            margin-bottom: 6px;
-        }
-        
-        /* 咨询类型按钮 */
-        .type-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .type-button {
-            flex: 1;
-            min-width: 90px;
-            font-size: 13px !important;
-            padding: 8px 12px !important;
-            border: 1px solid #E0E0E0 !important;
+            padding: 16px !important;
             background: white !important;
-            color: var(--text-color) !important;
-            border-radius: 16px !important;
-            transition: all var(--transition-speed) !important;
-            text-align: center !important;
+            border-top: 1px solid #E0E0FF !important;
+            align-items: center !important;
+        }
+        .input-row > div {
+            margin: 0 !important;
+        }
+        .button-group {
+            display: flex !important;
+            justify-content: flex-end !important;
+        }
+        .button-group .gr-row {
+            gap: 8px !important;
+        }
+        .button-group button {
+            min-width: unset !important;
+            padding: 0 16px !important;
+            height: 36px !important;
+            font-size: 14px !important;
+        }
+        .full-width-button {
+            width: 100% !important;
+            margin: 12px 0 !important;
+            height: 40px !important;
+            border-radius: 12px !important;
         }
     """) as demo:
-        # 顶部标题栏
-        with gr.Row(elem_classes="header"):
-            gr.Markdown("# ✨ TimelessSkin 智能护肤顾问")
-            
-        with gr.Row(elem_classes="container"):
-            # 左侧面板 - 聊天界面
-            with gr.Column(elem_classes="left-panel"):
+        gr.Markdown("## ✨ TimelessSkin 智能护肤顾问")
+
+        with gr.Row():
+            with gr.Column(scale=7):
                 chatbot = gr.Chatbot(
                     [],
                     elem_id="chatbot",
-                    elem_classes="chatbot",
                     bubble_full_width=False,
                     show_copy_button=True,
-                    render_markdown=True,
-                    height="100%"  # 修改为100%以填满父容器
+                    render_markdown=True
                 )
-                with gr.Column(elem_classes="input-area"):
-                    with gr.Row(elem_classes="input-container"):
+                with gr.Row(elem_classes="input-row"):
+                    with gr.Column(scale=4):  # 输入框占更多空间
                         msg = gr.Textbox(
                             show_label=False,
                             placeholder="请输入您的问题...",
                             container=False,
-                            elem_classes="input-box",
-                            lines=1,
-                            max_lines=5
-                        )
-                    with gr.Row(elem_classes="button-row"):
-                        send = gr.Button("发送", variant="primary")
-                        clear = gr.Button("清除")
-            
-            # 右侧面板 - 修改为单列布局
-            with gr.Column(elem_classes="right-panel"):
-                # 咨询类型
-                with gr.Box(elem_classes="right-section consultation-section"):
-                    gr.Markdown("👥 咨询类型", elem_classes="section-title")
-                    gr.Markdown("您是为谁咨询?", elem_classes="type-hint")
-                    with gr.Column(elem_classes="consultation-type"):
-                        consultation_type = gr.Radio(
-                            choices=["为自己咨询", "为长辈咨询", "其他需求"],
-                            value=None,  # 默认不选择
-                            label="",
-                            elem_classes="type-buttons"
-                        )
-                
-                # 照片上传
-                with gr.Box(elem_classes="right-section upload-section"):
-                    gr.Markdown("📸 面部照片分析", elem_classes="section-title")
-                    with gr.Column():
-                        image_input = gr.Image(
-                            label="",
-                            type="pil",
-                            elem_classes="upload-area",
-                            height=180
-                        )
-                        analyze_btn = gr.Button("开始分析", elem_classes="analyze-button", variant="primary")
-                        gr.Markdown("""
-                        上传面部照片后，点击"开始分析"按钮进行皮肤分析。
-                        系统将自动调用智能模型识别您的皮肤状况并推荐适合的护肤产品。
-                        """, elem_classes="upload-hint")
-                
-                # 使用说明
-                with gr.Box(elem_classes="right-section instructions-section"):
-                    gr.Markdown("ℹ️ 使用说明", elem_classes="section-title")
+                            elem_classes="input-box"
+                        ).style(container=False)
+                    with gr.Column(scale=1, elem_classes="button-group"):  # 按钮组
+                        with gr.Row():
+                            send = gr.Button("发送", variant="primary", size="sm")
+                            clear = gr.Button("清除", size="sm")
+
+            with gr.Column(scale=3):
+                with gr.Box():
+                    gr.Markdown("👥 **咨询类型**", elem_classes="section-title")
+                    consultation_type = gr.Radio(
+                        ["为自己咨询", "为长辈咨询", "其他需求"],
+                        label=None,
+                        container=False,
+                        elem_classes="type-buttons"
+                    )
+
+                with gr.Box():
+                    gr.Markdown("📸 **面部照片分析**", elem_classes="section-title")
+                    image_input = gr.Image(
+                        label=None,
+                        type="pil",
+                        elem_classes="upload-area"
+                    )
+                    analyze_btn = gr.Button("开始分析", variant="primary", elem_classes="full-width-button")
+                    gr.Markdown('上传照片后点击"开始分析"进行皮肤分析')
+
+                with gr.Box():
+                    gr.Markdown("ℹ️ **使用说明**", elem_classes="section-title")
                     gr.Markdown("""
-                    1. 选择咨询类型
-                    2. 上传照片或直接对话
-                    3. 根据提示回答问题
-                    4. 获取个性化护肤建议
-                    
+                    • 选择咨询类型获取针对性建议
+                    • 上传照片可进行皮肤分析
+                    • 直接对话获取护肤建议
                     • 照片越清晰，分析越准确
-                    • 可以随时更换咨询类型
-                    • 有疑问可直接在对话框提问
-                    """, elem_classes="instructions")
+                    """)
 
-            # 状态存储
-            state = gr.State({
-                "consultation_type": None,
-                "skin_analysis": None,
-                "profile": None
-            })
+        # 状态存储
+        state = gr.State({
+            "consultation_type": None,
+            "skin_analysis": None,
+            "profile": None
+        })
 
-            # 事件处理
-            def on_select_type(choice, chat_history, state_data):
-                """处理咨询类型选择"""
-                try:
-                    if not isinstance(chat_history, list):
-                        chat_history = []
-                    
-                    if not isinstance(state_data, dict):
-                        state_data = {"consultation_type": None, "skin_analysis": None, "profile": None}
-                    
-                    # 如果没有选择，则显示默认开场白
-                    if not choice:
-                        initial_message = get_initial_prompt()
-                        chat_history = [(None, initial_message)]
-                        state_data["consultation_type"] = None
-                        return chat_history, state_data
-                    
-                    # 更新状态
-                    state_data["consultation_type"] = choice
-                    
-                    # 将用户选择作为一条消息添加到对话历史
-                    user_message = f"我想{choice}"
-                    chat_history.append((user_message, None))
-                    
-                    # 获取对应的回复
-                    response = get_initial_prompt(choice)
-                    
-                    # 更新消息回复
-                    chat_history[-1] = (user_message, response)
-                    
-                    return chat_history, state_data
-                    
-                except Exception as e:
-                    logger.error(f"处理咨询类型选择失败: {e}")
-                    # 返回一个基本的错误提示
-                    error_message = "抱歉，处理您的选择时出现错误，请重试。"
-                    return [(None, error_message)], {"consultation_type": None, "skin_analysis": None, "profile": None}
+        # 页面加载时自动触发开场白
+        demo.load(
+            lambda: ([(None, get_initial_prompt())], {"consultation_type": None, "skin_analysis": None, "profile": None}),
+            inputs=None,
+            outputs=[chatbot, state]
+        )
 
-            # 页面加载时自动触发开场白
-            demo.load(
-                lambda: ([(None, get_initial_prompt())], {"consultation_type": None, "skin_analysis": None, "profile": None}),
-                inputs=None,
-                outputs=[chatbot, state]
-            )
+        # 事件处理
+        consultation_type.change(
+            on_select_type,
+            inputs=[consultation_type, chatbot, state],
+            outputs=[chatbot, state]
+        )
 
-            # 更新事件处理
-            consultation_type.change(
-                on_select_type,
-                inputs=[consultation_type, chatbot, state],
-                outputs=[chatbot, state]
-            )
+        # 分析按钮事件
+        analyze_btn.click(
+            on_analyze,
+            inputs=[image_input, chatbot, state],
+            outputs=[chatbot, state]
+        )
 
-            # 分析按钮事件
-            analyze_btn.click(
-                on_analyze,
-                inputs=[image_input, chatbot, state],
-                outputs=[chatbot, state]
-            )
+        # 消息发送事件（支持按钮点击和回车发送）
+        msg.submit(
+            user_message_and_response,
+            [msg, chatbot, state],
+            [msg, chatbot],
+            queue=True,
+            api_name=None
+        ).then(
+            lambda: None,
+            None,
+            [msg],
+            queue=False
+        )
+        
+        send.click(
+            user_message_and_response,
+            [msg, chatbot, state],
+            [msg, chatbot],
+            queue=True,
+            api_name=None
+        ).then(
+            lambda: None,
+            None,
+            [msg],
+            queue=False
+        )
+        # 清除聊天记录
+        clear.click(lambda: None, None, chatbot)  # 返回None来清除聊天记录
 
-            # 消息发送事件
-            msg.submit(
-                user_message_and_response,
-                [msg, chatbot, state],
-                [msg, chatbot]
-            )
-            send.click(
-                user_message_and_response,
-                [msg, chatbot, state],
-                [msg, chatbot]
-            )
-            clear.click(lambda: [], None, chatbot)
-
-    return demo
+        return demo
 
 if __name__ == "__main__":
     # 获取可用端口
@@ -1098,4 +938,5 @@ if __name__ == "__main__":
     
     # 创建UI并启动服务
     demo = create_ui()
+    demo.queue()  # 启用队列
     demo.launch(server_name="127.0.0.1", server_port=port, share=False) 

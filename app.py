@@ -12,4 +12,5 @@ from frontend.gradio_app.ui_main import create_ui
 if __name__ == "__main__":
     # 创建并启动UI
     demo = create_ui()
+    demo.queue()  # 启用队列
     demo.launch(share=False) 
