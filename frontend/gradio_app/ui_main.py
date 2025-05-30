@@ -822,7 +822,7 @@ def create_ui():
                             placeholder="请输入您的问题...",
                             container=False,
                             elem_classes="input-box"
-                        )
+                        ).style(container=False)
                     with gr.Column(scale=1, elem_classes="button-group"):  # 按钮组
                         with gr.Row():
                             send = gr.Button("发送", variant="primary", size="sm")
