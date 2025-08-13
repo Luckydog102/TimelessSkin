@@ -1,5 +1,5 @@
 from typing import Dict, List, Any
-from langgraph.graph import Graph
+from langgraph.graph import StateGraph
 from .skincare_agent import SkinCareAgent
 import gradio as gr
 import asyncio
