@@ -1,7 +1,10 @@
 from __future__ import annotations
-from langgraph.graph import Graph, StateGraph, END
+from langgraph.graph import StateGraph, END
+try:
+    from langgraph.graph.graph import Graph
+except ImportError:
+    Graph = None
 from typing import Dict, List, Any
-from langgraph.graph import StateGraph
 from .skincare_agent import SkinCareAgent
 import gradio as gr
 import asyncio
@@ -34,7 +37,7 @@ class AdvisorGraph:
             "sensitivity": "敏感程度"
         }
 
-    def _build_graph(self) -> Graph:
+    def _build_graph(self) -> "Graph":
         """构建执行图"""
         # 定义节点
         async def analyze_skin(state: Dict[str, Any]) -> Dict[str, Any]:
