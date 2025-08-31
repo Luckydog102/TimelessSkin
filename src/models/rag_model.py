@@ -611,7 +611,7 @@ class RAGModel:
             } 
     
     def _extract_skin_concerns(self, product: Dict[str, Any]) -> List[str]:
-        """从产品信息中提取皮肤问题，而不是产品功效"""
+        """从产品信息中提取皮肤问题"""
         try:
             # 首先尝试获取专门的target_concerns字段
             if product.get("target_concerns"):
