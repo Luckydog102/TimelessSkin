@@ -1,0 +1,17 @@
+{
+    "task": "chat",
+    "framework": "gradio",
+    "model": {
+        "type": "custom",
+        "base_model": "TimelessSkin"
+    },
+    "pipeline": {
+        "type": "chat"
+    },
+    "datasets": [],
+    "dependencies": {
+        "python": ">=3.9.0",
+        "gradio": ">=4.19.2",
+        "modelscope": ">=1.9.5"
+    }
+} 
