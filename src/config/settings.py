@@ -63,6 +63,36 @@ SYSTEM_CONFIG = {
     "log_level": "INFO"
 }
 
+# 产品推荐规则配置
+PRODUCT_RULES = {
+    "default": {
+        "max_recommendations": 3,
+        "diversity_threshold": 0.7,
+        "brand_diversity": True,
+        "category_diversity": True,
+        "randomization": True,
+        "score_grouping": True
+    },
+    "elderly": {
+        "max_recommendations": 4,
+        "diversity_threshold": 0.8,
+        "brand_diversity": True,
+        "category_diversity": True,
+        "randomization": True,
+        "score_grouping": True,
+        "age_bonus": 1.2
+    },
+    "sensitive": {
+        "max_recommendations": 3,
+        "diversity_threshold": 0.9,
+        "brand_diversity": True,
+        "category_diversity": True,
+        "randomization": True,
+        "score_grouping": True,
+        "safety_bonus": 1.3
+    }
+}
+
 def get_config() -> Dict[str, Any]:
     """获取完整配置"""
     return {
@@ -71,5 +101,6 @@ def get_config() -> Dict[str, Any]:
         "knowledge_base": KNOWLEDGE_BASE_CONFIG,
         "product_db": PRODUCT_DB_CONFIG,
         "frontend": FRONTEND_CONFIG,
-        "system": SYSTEM_CONFIG
+        "system": SYSTEM_CONFIG,
+        "product_rules": PRODUCT_RULES
     } 

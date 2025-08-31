@@ -19,7 +19,7 @@ class EmbeddingModel(BaseModel):
         self.api_key = os.getenv("EMBEDDING_API_KEY")
         if not self.api_key:
             try:
-                with open('env.txt', 'r') as f:
+                with open('env.txt', 'r', encoding='utf-8') as f:
                     for line in f:
                         if line.startswith('EMBEDDING_API_KEY='):
                             self.api_key = line.strip().split('=', 1)[1]

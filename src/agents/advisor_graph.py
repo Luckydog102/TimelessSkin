@@ -1,13 +1,19 @@
 from __future__ import annotations
 from langgraph.graph import StateGraph, END
-try:
-    from langgraph.graph.graph import Graph
-except ImportError:
-    Graph = None
-from typing import Dict, List, Any
+from typing import Dict, List, Any, TypedDict, Annotated
 from .skincare_agent import SkinCareAgent
 import gradio as gr
 import asyncio
+
+class State(TypedDict):
+    user_image: Annotated[Any, "用户上传的图片"]
+    skin_analysis: Annotated[Dict, "皮肤分析结果"]
+    confidence_scores: Annotated[Dict, "置信度分数"]
+    user_profile: Annotated[Dict, "用户画像"]
+    questions: Annotated[List, "生成的问题"]
+    retrieved_info: Annotated[List, "检索到的信息"]
+    recommendations: Annotated[List, "推荐结果"]
+    trust_reasoning: Annotated[str, "信任推理"]
 
 class AdvisorGraph:
     """护肤顾问图"""
@@ -37,7 +43,7 @@ class AdvisorGraph:
             "sensitivity": "敏感程度"
         }
 
-    def _build_graph(self) -> "Graph":
+    def _build_graph(self) -> "StateGraph":
         """构建执行图"""
         # 定义节点
         async def analyze_skin(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -95,7 +101,7 @@ class AdvisorGraph:
             return {"trust_reasoning": reasoning}
 
         # 构建图
-        graph = Graph()
+        graph = StateGraph(State)
 
         # 添加节点
         graph.add_node("analyze_skin", analyze_skin)

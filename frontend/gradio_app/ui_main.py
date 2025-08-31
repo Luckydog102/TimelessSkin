@@ -155,8 +155,7 @@ def analyze_skin_with_vlm_direct(image, chat_history, state_data):
             image.thumbnail((800, 800), Image.LANCZOS)
             logger.info(f"压缩后尺寸: {image.size}")
         
-        # 先输出正在分析的提示
-        yield "正在分析您的面部照片..."
+     
         
         try:
             # 调用VLM分析
@@ -826,9 +825,17 @@ def on_analyze(image, chat_history, state_data):
         yield chat_history, state_data
         return
     
-    # 插入loading气泡
-    if not any(msg[0] == "帮我检测肤质" for msg in chat_history):
-        chat_history.append(("帮我检测肤质", "正在为您检测面部照片的肤质状况，请稍候..."))
+    # 🔥 关键修复：立即添加用户消息和loading状态
+    # 检查是否已经有"帮我检测肤质"的消息
+    has_analysis_message = any(msg[0] == "帮我检测肤质" for msg in chat_history)
+    
+    if not has_analysis_message:
+        # 添加用户消息
+        chat_history.append(("帮我检测肤质", None))
+        yield chat_history, state_data
+        
+        # 立即添加系统正在分析的回复
+        chat_history.append((None, "🔍 请稍候，正在分析您的皮肤状况..."))
         yield chat_history, state_data
     
     # 直接调用VLM分析，流式输出
@@ -874,7 +881,11 @@ def on_analyze(image, chat_history, state_data):
 • 说明您的年龄范围和性别
 
 请重新尝试，我会继续为您提供专业的护肤建议！"""
-            chat_history[-1] = ("帮我检测肤质", guidance_msg)
+            # 替换之前的分析消息
+            if len(chat_history) > 0 and chat_history[-1][1] and "正在分析您的皮肤状况" in chat_history[-1][1]:
+                chat_history[-1] = (None, guidance_msg)
+            else:
+                chat_history.append((None, guidance_msg))
             yield chat_history, state_data
             return
         
@@ -1777,7 +1788,7 @@ def create_ui():
         with gr.Row():
             with gr.Column(scale=7):
                 chatbot = gr.Chatbot(
-                    [["", "您好，我是您的智能护肤顾问，您可以选择需要咨询的类型，我能为您提供针对性的建议~"]],
+                    [[None, "您好，我是您的智能护肤顾问，您可以选择需要咨询的类型，我能为您提供针对性的建议~"]],
                     elem_id="chatbot",
                     bubble_full_width=False,
                     show_copy_button=True,
@@ -1820,7 +1831,7 @@ def create_ui():
                     • 上传照片可进行皮肤分析
                     • 直接对话获取护肤建议
                     
-                    **📱 照片要求：**
+                    **🔍 照片要求：**
                     • 照片越清晰，分析越准确
                     • 建议正面拍摄，光线充足
                     • 避免侧脸或模糊照片

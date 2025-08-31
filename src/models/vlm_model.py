@@ -1,16 +1,16 @@
 from typing import Any, Dict, List, Optional
-from src.models.base_model import BaseModel
+from .base_model import BaseModel
 import requests
 import json
 from dotenv import load_dotenv
 import os
 from PIL import Image
-import base64
-from io import BytesIO
-from ..config.prompts import SKIN_ANALYSIS_PROMPT
 import re
 import traceback
 import logging
+import base64
+from io import BytesIO
+import time
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -25,7 +25,9 @@ class VLMModel(BaseModel):
         self.api_key = os.getenv("VLM_API_KEY")
         if not self.api_key:
             try:
-                with open('env.txt', 'r') as f:
+                env_path = os.path.join(os.path.dirname(__file__), '../../env.txt')
+                # 使用utf-8编码读取文件
+                with open(env_path, 'r', encoding='utf-8') as f:
                     for line in f:
                         if line.startswith('VLM_API_KEY='):
                             self.api_key = line.strip().split('=', 1)[1]
@@ -38,6 +40,8 @@ class VLMModel(BaseModel):
             self.api_key = "sk-217c50dbecb64d2089a1f77f3ac079dc"
             
         self.api_base = os.getenv("VLM_API_BASE", "https://dashscope.aliyuncs.com/api/v1")
+        # 强制使用正确的API基础URL
+        self.api_base = "https://dashscope.aliyuncs.com/api/v1"
         # 增加超时设置和重试次数
         self.timeout = 60  # 增加到60秒
         self.max_retries = 5  # 增加到5次
@@ -83,7 +87,7 @@ class VLMModel(BaseModel):
                 image.save(buffered, format="JPEG", quality=75)  # 降低质量
                 img_str = base64.b64encode(buffered.getvalue()).decode()
                 
-                logger.info(f"图片处理完成，大小: {len(img_str) // 1024} KB")
+                # logger.info(f"图片处理完成，大小: {len(img_str) // 1024} KB")
                 
                 # 准备请求数据
                 request_body = {
@@ -104,7 +108,7 @@ class VLMModel(BaseModel):
                         ]
                     },
                     "parameters": {
-                        "max_tokens": 1500,
+                        "max_tokens": 3000,  # 增加到3000以确保完整输出
                         "temperature": 0.7,  # 降低温度以提高一致性
                         "result_format": "message",
                         "seed": 1234,
@@ -114,7 +118,8 @@ class VLMModel(BaseModel):
                 
                 # 发送请求
                 endpoint = f"{self.api_base}/services/aigc/multimodal-generation/generation"
-                logger.info(f"发送请求到: {endpoint}")
+                # logger.info(f"🔥 VLM API调用：发送请求到 {endpoint}")
+                # logger.info(f"🔥 VLM API调用：请求体大小 {len(json.dumps(request_body))} 字符")
                 
                 response = requests.post(
                     endpoint,
@@ -127,17 +132,17 @@ class VLMModel(BaseModel):
                     timeout=self.timeout
                 )
                 
-                logger.info(f"API响应状态码: {response.status_code}")
+                # logger.info(f"🔥 VLM API调用：响应状态码 {response.status_code}")
+                # logger.info(f"🔥 VLM API调用：响应头 {dict(response.headers)}")
                 
                 if response.status_code != 200:
                     error_msg = f"API调用失败(状态码:{response.status_code}): {response.text}"
                     logger.error(error_msg)
                     
-                    # 如果是429错误（请求过多），等待后重试
+                    # 如果是请求过多错误，等待后重试
                     if response.status_code == 429 and attempt < self.max_retries - 1:
                         retry_delay = self.retry_delay * (2 ** attempt)  # 指数退避
                         logger.warning(f"请求过多，等待{retry_delay}秒后重试 (尝试 {attempt+1}/{self.max_retries})")
-                        import time
                         time.sleep(retry_delay)
                         continue
                         
@@ -153,15 +158,26 @@ class VLMModel(BaseModel):
                     continue
                     
                 result = response.json()
-                logger.info(f"API返回结果长度: {len(json.dumps(result))} 字符")
+                # logger.info(f"API返回结果长度: {len(json.dumps(result))} 字符")
+                # logger.info(f"API返回结果结构: {list(result.keys())}")
                 
                 if "output" in result and "choices" in result["output"] and len(result["output"]["choices"]) > 0:
                     choice = result["output"]["choices"][0]
+                    # logger.info(f"Choice结构: {list(choice.keys())}")
+                    
                     if "message" in choice and "content" in choice["message"]:
                         content = choice["message"]["content"]
+                        # logger.info(f"Content类型: {type(content)}, 长度: {len(str(content))}")
+                        
                         if isinstance(content, list) and len(content) > 0 and "text" in content[0]:
                             text = content[0]["text"]
-                            logger.info(f"解析到的文本内容长度: {len(text)} 字符")
+                            # logger.info(f"解析到的文本内容长度: {len(text)} 字符")
+                            # logger.info(f"文本内容前100字符: {text[:100]}")
+                            # logger.info(f"文本内容后100字符: {text[-100:] if len(text) > 100 else text}")
+                            
+                            # 确保包含age_group字段
+                            if '"age_group"' not in text and "'age_group'" not in text:
+                                text = text.replace('"skin_analysis": {', '"skin_analysis": {\n        "age_group": "",')
                             
                             # 尝试解析JSON
                             try:
@@ -183,8 +199,14 @@ class VLMModel(BaseModel):
                                         return {"skin_analysis": result}
                                     except json.JSONDecodeError as e:
                                         logger.warning(f"JSON代码块解析失败: {e}")
-                                        # 如果JSON解析失败，返回原始文本
-                                        return {"skin_analysis": text}
+                                        # 如果JSON解析失败，尝试直接解析
+                                        try:
+                                            result = json.loads(text)
+                                            logger.info(f"直接解析文本为JSON成功")
+                                            return {"skin_analysis": result}
+                                        except json.JSONDecodeError:
+                                            logger.warning(f"无法解析JSON，返回原始文本")
+                                            return {"skin_analysis": text}
                                     
                                 # 如果没有找到JSON代码块，尝试直接解析整个文本
                                 try:
@@ -192,13 +214,32 @@ class VLMModel(BaseModel):
                                     logger.info(f"直接解析文本为JSON成功")
                                     return {"skin_analysis": result}
                                 except json.JSONDecodeError:
-                                    logger.info("无法直接解析文本为JSON，返回原始文本")
-                                    return {"skin_analysis": text}
+                                    logger.warning(f"无法直接解析文本为JSON，尝试清理后解析")
+                                    # 尝试清理文本后解析
+                                    cleaned_text = text.strip()
+                                    # 移除可能的markdown标记
+                                    if cleaned_text.startswith('```') and cleaned_text.endswith('```'):
+                                        cleaned_text = cleaned_text[3:-3].strip()
+                                    if cleaned_text.startswith('json'):
+                                        cleaned_text = cleaned_text[4:].strip()
+                                    
+                                    try:
+                                        result = json.loads(cleaned_text)
+                                        logger.info(f"清理后解析JSON成功")
+                                        return {"skin_analysis": result}
+                                    except json.JSONDecodeError:
+                                        logger.warning(f"清理后仍无法解析JSON，返回原始文本")
+                                        return {"skin_analysis": text}
                                 
-                            except json.JSONDecodeError as e:
-                                logger.warning(f"JSON解析错误: {str(e)}")
+                            except Exception as e:
+                                logger.warning(f"JSON解析过程中出现错误: {str(e)}")
                                 return {"skin_analysis": text}
-                                
+                        else:
+                            logger.warning(f"Content不是预期的列表格式: {content}")
+                else:
+                    logger.warning(f"API返回格式不符合预期，output或choices缺失")
+                    logger.info(f"Result内容: {result}")
+                    
                 logger.warning("API返回格式不符合预期")
                 # 如果不是最后一次尝试，继续重试
                 if attempt < self.max_retries - 1:
@@ -267,7 +308,7 @@ if __name__ == "__main__":
 
     # 假设你有一张图片 image.png
     image = Image.open("cases/acne_faces/1.jpg")
-    prompt = SKIN_ANALYSIS_PROMPT.format(image_description="用户上传的面部照片")
+    prompt = "用户上传的面部照片" # SKIN_ANALYSIS_PROMPT.format(image_description="用户上传的面部照片")
     if model.validate_input(image):
         result = model.predict(image, prompt)
         print("分析结果：", result)

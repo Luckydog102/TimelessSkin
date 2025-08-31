@@ -1,12 +1,14 @@
 from typing import Any, Dict, List, Optional, Tuple, Generator, Iterator
 from .base_model import BaseModel
-from ..config.prompts import QUESTION_GENERATION_PROMPT
 import requests
 import json
 from dotenv import load_dotenv
 import os
 import traceback
 import re
+import time
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 class LLMModel(BaseModel):
     """Qwen模型API实现"""
@@ -15,8 +17,45 @@ class LLMModel(BaseModel):
         load_dotenv(dotenv_path=".env")
         self.model_name = model_name or os.getenv("LLM_MODEL_NAME", "qwen-max")
         self.api_key = os.getenv("LLM_API_KEY", "sk-217c50dbecb64d2089a1f77f3ac079dc")
+        
+        # 使用与VLM相同的API基础URL，确保兼容性
         self.api_base = os.getenv("LLM_API_BASE", "https://dashscope.aliyuncs.com/api/v1")
         
+        # 如果环境变量中没有设置，尝试从env.txt加载
+        if not self.api_key or self.api_key == "sk-217c50dbecb64d2089a1f77f3ac079dc":
+            try:
+                env_path = os.path.join(os.path.dirname(__file__), '../../env.txt')
+                with open(env_path, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith('LLM_API_KEY=') and not self.api_key:
+                            self.api_key = line.split('=', 1)[1]
+                        elif line.startswith('LLM_MODEL_NAME=') and not self.model_name:
+                            self.model_name = line.split('=', 1)[1]
+                        
+                        # 如果所有配置都已读取，提前退出
+                        if self.api_key and self.model_name:
+                            break
+            except Exception as e:
+                print(f"无法从env.txt加载配置: {e}")
+        
+        # 强制使用正确的API基础URL
+        self.api_base = "https://dashscope.aliyuncs.com/api/v1"
+        
+        # 创建带重试机制的session
+        self.session = requests.Session()
+        retry_strategy = Retry(
+            total=3,  # 总重试次数
+            backoff_factor=1,  # 重试间隔倍数
+            status_forcelist=[429, 500, 502, 503, 504],  # 需要重试的HTTP状态码
+            allowed_methods=["POST"]  # 允许重试的HTTP方法
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
+        
+        print(f"LLM配置: model={self.model_name}, base={self.api_base}, key={self.api_key[:10]}...{self.api_key[-10:]}")
+            
     def initialize(self) -> None:
         """初始化API连接"""
         if not self.api_key:
@@ -51,24 +90,28 @@ class LLMModel(BaseModel):
                 }
             }
             
-            # 真实API调用
+            # 真实API调用 - 使用正确的文本生成端点
             endpoint = f"{self.api_base}/services/aigc/text-generation/generation"
             print(f"发送API请求: {endpoint}")
+            print(f"请求体: {json.dumps(request_body, ensure_ascii=False)}")
             
-            response = requests.post(
+            response = self.session.post(
                 endpoint,
                 headers={
                     "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-DashScope-Client": "TimelessSkin/1.0"  # 添加客户端标识
                 },
-                json=request_body
+                json=request_body,
+                timeout=(10, 60),  # 连接超时10秒，读取超时60秒
+                verify=True  # 启用SSL证书验证
             )
             
             print(f"API状态码: {response.status_code}")
+            print(f"响应头: {dict(response.headers)}")
             
             if response.status_code != 200:
                 print(f"API错误: {response.status_code}")
-                print(f"响应头: {response.headers}")
                 print(f"响应内容: {response.text}")
                 raise Exception(f"API调用失败: {response.text}")
                 
@@ -116,6 +159,15 @@ class LLMModel(BaseModel):
             else:
                 raise Exception(f"API返回格式错误: {result}")
                 
+        except requests.exceptions.Timeout as e:
+            print(f"LLM请求超时: {str(e)}")
+            raise Exception("网络请求超时，请检查网络连接或稍后重试")
+        except requests.exceptions.ConnectionError as e:
+            print(f"LLM连接错误: {str(e)}")
+            raise Exception("网络连接失败，请检查网络设置")
+        except requests.exceptions.RequestException as e:
+            print(f"LLM请求错误: {str(e)}")
+            raise Exception(f"网络请求失败: {str(e)}")
         except Exception as e:
             print(f"LLM预测错误: {str(e)}")
             print(f"详细错误: {traceback.format_exc()}")
@@ -152,7 +204,7 @@ class LLMModel(BaseModel):
             endpoint = f"{self.api_base}/services/aigc/text-generation/generation"
             print(f"发送流式API请求: {endpoint}")
             
-            response = requests.post(
+            response = self.session.post(
                 endpoint,
                 headers={
                     "Authorization": f"Bearer {self.api_key}",
@@ -160,7 +212,8 @@ class LLMModel(BaseModel):
                     "Accept": "text/event-stream"  # 指定接收事件流
                 },
                 json=request_body,
-                stream=True  # 启用流式响应
+                stream=True,  # 启用流式响应
+                timeout=(10, 60)  # 连接超时10秒，读取超时60秒
             )
             
             print(f"API状态码: {response.status_code}")
@@ -226,7 +279,7 @@ class LLMModel(BaseModel):
             endpoint = f"{self.api_base}/services/aigc/text-generation/generation"
             print(f"发送流式API请求: {endpoint}")
             
-            response = requests.post(
+            response = self.session.post(
                 endpoint,
                 headers={
                     "Authorization": f"Bearer {self.api_key}",
@@ -235,7 +288,8 @@ class LLMModel(BaseModel):
                     "X-DashScope-SSE": "enable"  # 启用SSE
                 },
                 json=request_body,
-                stream=True
+                stream=True,
+                timeout=(10, 60)  # 连接超时10秒，读取超时60秒
             )
             
             if response.status_code != 200:
@@ -350,16 +404,24 @@ class LLMModel(BaseModel):
                 }
             }
             
-            # API调用
+            # API调用 - 使用正确的文本生成端点
             endpoint = f"{self.api_base}/services/aigc/text-generation/generation"
-            response = requests.post(
+            print(f"发送API请求: {endpoint}")
+            print(f"请求体: {json.dumps(request_body, ensure_ascii=False)}")
+            
+            response = self.session.post(
                 endpoint,
                 headers={
                     "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-DashScope-Client": "TimelessSkin/1.0"  # 添加客户端标识
                 },
-                json=request_body
+                json=request_body,
+                timeout=(10, 60)  # 连接超时10秒，读取超时60秒
             )
+            
+            print(f"API状态码: {response.status_code}")
+            print(f"响应内容: {response.text}")
             
             if response.status_code != 200:
                 raise Exception(f"API调用失败: {response.text}")
