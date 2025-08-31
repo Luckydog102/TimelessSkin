@@ -1,0 +1,40 @@
+{
+    "conditions": [
+        {
+            "condition": "痘痘",
+            "description": "皮肤表面出现红肿、发炎的丘疹或脓包",
+            "severity_levels": {
+                "轻度": "偶尔出现少量痘痘",
+                "中度": "经常性出现痘痘，但范围有限",
+                "重度": "大面积持续性痘痘"
+            },
+            "causes": ["油脂分泌过多", "毛孔堵塞", "细菌感染"],
+            "recommended_ingredients": ["水杨酸", "维生素B3", "茶树精油"],
+            "related_conditions": ["油性皮肤", "毛孔粗大"]
+        },
+        {
+            "condition": "干燥",
+            "description": "皮肤缺水，感觉紧绷，可能出现脱屑",
+            "severity_levels": {
+                "轻度": "偶尔感觉紧绷",
+                "中度": "经常性干燥，有细小脱屑",
+                "重度": "严重干燥，出现皲裂"
+            },
+            "causes": ["水分流失", "皮脂分泌不足", "环境因素"],
+            "recommended_ingredients": ["玻尿酸", "神经酰胺", "甘油"],
+            "related_conditions": ["敏感", "细纹"]
+        },
+        {
+            "condition": "暗沉",
+            "description": "肤色不均匀，缺乏光泽",
+            "severity_levels": {
+                "轻度": "略显暗淡",
+                "中度": "明显暗沉",
+                "重度": "色斑明显"
+            },
+            "causes": ["新陈代谢慢", "角质堆积", "日晒伤害"],
+            "recommended_ingredients": ["维生素C", "烟酰胺", "果酸"],
+            "related_conditions": ["色斑", "粗糙"]
+        }
+    ]
+} 

@@ -1,0 +1,59 @@
+{
+    "routine_type": "basic",
+    "steps": [
+        {
+            "step": 1,
+            "name": "清洁",
+            "description": "使用温和洁面产品",
+            "time": "早晚",
+            "importance": "essential",
+            "tips": ["水温适中", "轻柔按摩", "彻底冲洗"]
+        },
+        {
+            "step": 2,
+            "name": "爽肤",
+            "description": "使用爽肤水或化妆水",
+            "time": "早晚",
+            "importance": "essential",
+            "tips": ["轻拍吸收", "不要用力擦拭"]
+        },
+        {
+            "step": 3,
+            "name": "精华",
+            "description": "使用针对性精华",
+            "time": "早晚",
+            "importance": "essential",
+            "tips": ["用量适中", "按摩吸收"]
+        },
+        {
+            "step": 4,
+            "name": "保湿",
+            "description": "使用面霜或乳液",
+            "time": "早晚",
+            "importance": "essential",
+            "tips": ["适量使用", "按摩至吸收"]
+        },
+        {
+            "step": 5,
+            "name": "防晒",
+            "description": "使用防晒产品",
+            "time": "早上",
+            "importance": "essential",
+            "tips": ["用量充足", "及时补涂"]
+        }
+    ],
+    "variations": {
+        "morning": ["清洁", "爽肤", "精华", "保湿", "防晒"],
+        "evening": ["清洁", "爽肤", "精华", "保湿"]
+    },
+    "special_care": {
+        "acne_prone": {
+            "additional_steps": ["抗痘精华", "控油产品"],
+            "frequency": "daily"
+        },
+        "sensitive": {
+            "additional_steps": ["舒缓精华", "修复面霜"],
+            "frequency": "as_needed"
+        }
+    }
+} 

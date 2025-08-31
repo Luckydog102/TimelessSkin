@@ -1,0 +1,40 @@
+{
+    "categories": {
+        "skin_conditions": {
+            "acne": {
+                "subtypes": ["inflammatory", "comedonal", "cystic"],
+                "severity_levels": ["mild", "moderate", "severe"],
+                "related_conditions": ["sensitivity", "oiliness"]
+            },
+            "aging": {
+                "subtypes": ["wrinkles", "sagging", "pigmentation"],
+                "severity_levels": ["early", "moderate", "advanced"],
+                "related_conditions": ["dryness", "sensitivity"]
+            }
+        },
+        "products": {
+            "cleansers": {
+                "types": ["foam", "gel", "cream", "oil"],
+                "suitable_for": ["all", "sensitive", "oily", "dry"],
+                "key_ingredients": ["amino acids", "salicylic acid", "glycerin"]
+            },
+            "moisturizers": {
+                "types": ["cream", "lotion", "gel", "serum"],
+                "suitable_for": ["all", "sensitive", "oily", "dry"],
+                "key_ingredients": ["hyaluronic acid", "ceramides", "glycerin"]
+            }
+        },
+        "skincare_rules": {
+            "basic_routine": {
+                "steps": ["cleansing", "toning", "treatment", "moisturizing", "sunscreen"],
+                "variations": ["morning", "evening"],
+                "special_care": ["acne", "sensitive", "aging"]
+            }
+        },
+        "user_profiles": {
+            "skin_types": ["oily", "dry", "combination", "sensitive"],
+            "age_groups": ["teen", "young_adult", "adult", "mature"],
+            "lifestyle_factors": ["stress", "diet", "sleep", "exercise"]
+        }
+    }
+} 

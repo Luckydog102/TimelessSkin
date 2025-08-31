@@ -1,0 +1,106 @@
+name: TimelessSkin
+description: |
+  TimelessSkin是一个基于Gradio开发的智能护肤顾问应用。
+  它集成了多个AI模型，包括LLM（大语言模型）、VLM（视觉语言模型）和RAG（检索增强生成）系统，
+  为用户提供个性化的护肤建议和产品推荐。
+
+tags:
+  - gradio
+  - llm
+  - vlm
+  - rag
+  - skincare
+  - healthcare
+  - chinese
+
+tasks:
+  - text-generation
+  - image-classification
+  - question-answering
+
+models:
+  - QWen-Max
+  - Qwen-VL
+
+datasets:
+  - custom_skincare_products
+  - custom_skincare_knowledge
+
+environment:
+  python_version: "3.9"
+  cuda_version: "11.7"
+  cudnn_version: "8.0"
+  framework: "gradio"
+  framework_version: "4.19.2"
+
+dependencies:
+  pip:
+    - pillow==10.2.0
+    - python-dotenv==1.0.1
+    - requests==2.31.0
+    - faiss-cpu==1.7.4
+    - pypdf==4.1.0
+    - dashscope==1.14.1
+    - qianfan==0.4.0
+    - sentence-transformers==2.5.1
+    - langchain>=0.1.11
+    - langchain-community>=0.0.27
+    - langchain-core>=0.1.30
+    - gradio==4.19.2
+    - langgraph>=0.0.26
+
+features:
+  - 智能护肤咨询：基于LLM提供专业的护肤建议
+  - 皮肤分析：使用VLM分析用户上传的面部照片
+  - 产品推荐：基于RAG系统从知识库中检索合适的护肤产品
+  - 个性化建议：根据用户年龄、肤质、护肤困扰等提供定制化建议
+  - 实时对话：支持流式输出的自然交互体验
+  - 多场景支持：支持个人护肤、长辈护肤等多种咨询场景
+
+usage:
+  installation: |
+    git clone http://oauth2:yYd3SQqRxwjS82axAkKG@www.modelscope.cn/studios/luckydog123/TimelessSkin.git
+    cd TimelessSkin
+    pip install -r requirements.txt
+
+  start: |
+    python app.py
+
+  examples:
+    - task: 个人护肤咨询
+      inputs: 
+        - "我是25岁女性，混合性皮肤，最近脸上长痘痘，请问该怎么护理？"
+      description: 根据用户描述提供护肤建议
+
+    - task: 皮肤分析
+      inputs:
+        - "上传面部照片"
+      description: 分析面部照片并给出护肤建议
+
+    - task: 产品推荐
+      inputs:
+        - "帮我推荐一款适合干性皮肤的面霜"
+      description: 基于用户需求推荐合适的护肤产品
+
+license: MIT License
+
+author:
+  name: luckydog123
+  organization: ModelScope
+  email: ""
+
+contributors:
+  - name: luckydog123
+    organization: ModelScope
+
+resources:
+  cpu: 2
+  memory: 8
+  gpu: 0
+
+keywords:
+  - 护肤顾问
+  - 智能问答
+  - 皮肤分析
+  - 产品推荐
+  - AI助手 
